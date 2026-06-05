@@ -2,6 +2,7 @@ import { buildActivityWindow, calculateEligibility } from './eligibility.js';
 import { getConfigStatus } from './config-status.js';
 
 const API_ROOT = 'https://www.bungie.net/Platform';
+const STATS_API_ROOT = 'https://stats.bungie.net/Platform';
 const AUTH_ROOT = 'https://www.bungie.net/en/OAuth/Authorize';
 const TOKEN_URL = 'https://www.bungie.net/Platform/App/OAuth/Token/';
 const MEMBERSHIP_TYPE_ALL = -1;
@@ -31,10 +32,11 @@ function getHeaders(token) {
 }
 
 async function requestJson(pathname, token, options = {}) {
-  const response = await fetch(`${API_ROOT}${pathname}`, {
-    ...options,
+  const { apiRoot = API_ROOT, onSkip, ...fetchOptions } = options;
+  const response = await fetch(`${apiRoot}${pathname}`, {
+    ...fetchOptions,
     headers: {
-      ...(options.headers ?? {}),
+      ...(fetchOptions.headers ?? {}),
       ...(token ? getHeaders(token) : {}),
     },
   });
@@ -64,6 +66,15 @@ function normalizeBungieError(payload, status) {
   }
 
   return rawMessage;
+}
+
+async function requestJsonOrNull(pathname, token, options = {}) {
+  try {
+    return await requestJson(pathname, token, options);
+  } catch (error) {
+    options.onSkip?.(error);
+    return null;
+  }
 }
 
 function createState() {
@@ -191,6 +202,8 @@ export async function fetchAccountEligibility(token, options = {}) {
   const displayName = membershipResponse?.bungieNetUser?.displayName ?? 'Guardian';
   const activities = [];
   const processedCharacters = [];
+  const usableMemberships = [];
+  const skippedMemberships = [];
   let membershipsDone = 0;
   let charactersDone = 0;
   let charactersTotal = 0;
@@ -207,12 +220,46 @@ export async function fetchAccountEligibility(token, options = {}) {
       pagesFetched,
     });
 
-    const history = await requestJson(
+    const history = await requestJsonOrNull(
       `/Destiny2/${membership.membershipType}/Account/${membership.membershipId}/Stats/?groups=${GENERAL_GROUP}`,
-      token
+      token,
+      {
+        onSkip: (error) => {
+          skippedMemberships.push({
+            membershipId: membership.membershipId,
+            membershipType: membership.membershipType,
+            reason: error.message,
+          });
+          emitProgress({
+            phase: 'account-stats',
+            message: `Skipped ${getMembershipTypeLabel(membership.membershipType)} because Bungie did not return usable account stats.`,
+            membershipsDone,
+            membershipsTotal: destinyMemberships.length,
+            charactersDone,
+            charactersTotal,
+            pagesFetched,
+          });
+        },
+      }
     );
 
+    if (!history) {
+      membershipsDone += 1;
+      continue;
+    }
+
     const characters = history?.characters ?? [];
+    if (!characters.length) {
+      skippedMemberships.push({
+        membershipId: membership.membershipId,
+        membershipType: membership.membershipType,
+        reason: 'No characters returned.',
+      });
+      membershipsDone += 1;
+      continue;
+    }
+
+    usableMemberships.push(membership);
     charactersTotal += characters.length;
     for (const character of characters) {
       processedCharacters.push({
@@ -256,6 +303,13 @@ export async function fetchAccountEligibility(token, options = {}) {
     membershipsDone += 1;
   }
 
+  if (!processedCharacters.length && skippedMemberships.length) {
+    throw new Error(
+      'Bungie login worked, but no usable Destiny 2 profile was returned for this Bungie account. ' +
+      'This can happen when Bungie returns stale or unlinked platform memberships. Make sure you are signed into the Bungie.net account linked to your Destiny 2 platform account, then try again.'
+    );
+  }
+
   if (!activities.length) {
     throw new Error('No usable Destiny 2 history was returned for this account.');
   }
@@ -275,9 +329,10 @@ export async function fetchAccountEligibility(token, options = {}) {
     ...eligibility,
     account: {
       displayName,
-      membershipCount: destinyMemberships.length,
+      membershipCount: usableMemberships.length,
       characterCount: processedCharacters.length,
-      memberships: destinyMemberships.map((membership) => ({
+      skippedMembershipCount: skippedMemberships.length,
+      memberships: usableMemberships.map((membership) => ({
         iconPath: membership.iconPath ?? '',
         membershipId: membership.membershipId,
         membershipType: membership.membershipType,
@@ -292,10 +347,15 @@ async function fetchCharacterActivityHistory(token, membershipType, membershipId
 
   while (pendingPages.length) {
     const page = pendingPages.shift();
-    const response = await requestJson(
+    const response = await requestJsonOrNull(
       `/Destiny2/${membershipType}/Account/${membershipId}/Character/${characterId}/Stats/Activities/?count=${PAGE_SIZE}&mode=${ACTIVITY_MODE_ALL}&page=${page}`,
-      token
+      token,
+      { apiRoot: STATS_API_ROOT }
     );
+
+    if (!response) {
+      continue;
+    }
 
     const activities = response?.activities ?? [];
     onPageFetched(page);
