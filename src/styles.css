@@ -843,6 +843,25 @@ select {
   font-size: 0.86rem;
 }
 
+.disclaimer-link {
+  display: inline-block;
+  margin-top: 10px;
+  color: rgba(184, 182, 255, 0.72);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(184, 182, 255, 0.22);
+  opacity: 0.74;
+  transition: color 160ms ease, border-color 160ms ease, opacity 160ms ease;
+}
+
+.disclaimer-link:hover,
+.disclaimer-link:focus-visible {
+  color: rgba(239, 243, 255, 0.96);
+  border-bottom-color: rgba(198, 161, 90, 0.52);
+  opacity: 1;
+}
+
 @media (min-width: 1500px) and (min-height: 980px) {
   .page-shell {
     max-height: 100vh;
