@@ -1,0 +1,4 @@
+output-*.png
+tests
+.env.example
+README.md

@@ -1,0 +1,9 @@
+dist/
+.vercel/
+node_modules/
+.env
+*.local
+output-*.png
+*-dom.html
+
+.vercel

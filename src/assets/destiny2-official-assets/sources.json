@@ -1,0 +1,33 @@
+{
+  "generatedImages": false,
+  "backgrounds": [
+    {
+      "file": "backgrounds/steam_destiny2_library_hero_3840x1240.jpg",
+      "source": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1085660/library_hero_2x.jpg",
+      "dimensions": "3840x1240",
+      "officialBasis": "Destiny 2 publisher-provided Steam CDN media"
+    },
+    {
+      "file": "backgrounds/steam_destiny2_library_hero_1920x620.jpg",
+      "source": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1085660/library_hero.jpg",
+      "dimensions": "1920x620",
+      "officialBasis": "Destiny 2 publisher-provided Steam CDN media"
+    },
+    {
+      "file": "backgrounds/steam_destiny2_page_bg_1438x810.jpg",
+      "source": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1085660/page_bg_generated_v6b.jpg",
+      "dimensions": "1438x810",
+      "officialBasis": "Destiny 2 publisher-provided Steam CDN media"
+    }
+  ],
+  "watermarkDataSources": [
+    "https://raw.githubusercontent.com/DestinyItemManager/d2-additional-info/master/data/seasons/all-watermarks.json",
+    "https://raw.githubusercontent.com/DestinyItemManager/d2-additional-info/master/output/watermark-to-season.json",
+    "https://raw.githubusercontent.com/DestinyItemManager/d2-additional-info/master/output/season-tags.json"
+  ],
+  "bungieCdnBase": "https://www.bungie.net",
+  "oldLightsRewardIcon": {
+    "included": false,
+    "reason": "Specific Old Lights emblem/reward art could not be verified from accessible public sources; the attached screenshot did not show a loaded emblem image."
+  }
+}

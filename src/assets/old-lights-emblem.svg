@@ -1,0 +1,27 @@
+<svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" role="img">
+  <defs>
+    <linearGradient id="tile" x1="12" x2="84" y1="8" y2="92">
+      <stop stop-color="#38404a"/>
+      <stop offset=".45" stop-color="#222832"/>
+      <stop offset="1" stop-color="#6d542f"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="28" x2="68" y1="19" y2="76">
+      <stop stop-color="#ffffff"/>
+      <stop offset=".42" stop-color="#dfe3e6"/>
+      <stop offset="1" stop-color="#8d969e"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity=".45"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="#ffffff" flood-opacity=".18"/>
+    </filter>
+  </defs>
+  <rect x="0" y="0" width="96" height="96" rx="5" fill="url(#tile)"/>
+  <path d="M48 10 74 22v36L48 78 22 58V22Z" fill="#f4f6f7" opacity=".95" filter="url(#soft)"/>
+  <path d="M48 16 68 25.3v29.9L48 70.7 28 55.2V25.3Z" fill="#202733"/>
+  <path d="M48 18.6 65.4 26.7v27L48 67.2 30.6 53.7v-27Z" fill="url(#metal)"/>
+  <path d="M48 23.3 62 29.8v21.8L48 62.7 34 51.6V29.8Z" fill="#171d27"/>
+  <path d="M48 33.1c-2.3 0-4.2 2-4.2 4.5v8.5c0 2.2-1.7 3.9-3.8 3.9-2.8 0-5-2.5-5-5.6v-4.5c-3 1.2-5.1 4.2-5.1 7.7 0 5.9 5.7 10.9 18.1 18.8 12.4-7.9 18.1-12.9 18.1-18.8 0-3.5-2.1-6.5-5.1-7.7v4.5c0 3.1-2.2 5.6-5 5.6-2.1 0-3.8-1.7-3.8-3.9v-8.5c0-2.5-1.9-4.5-4.2-4.5Z" fill="#eff1f2"/>
+  <path d="M22 29 12 24M74 29l10-5M23 64l-8 6M73 64l8 6" stroke="#eef1f4" stroke-width="2" stroke-linecap="round" opacity=".62"/>
+  <path d="M48 7.5 78.5 21.6v38.8L48 83.8 17.5 60.4V21.6Z" fill="none" stroke="#ffffff" stroke-width="2" opacity=".58"/>
+  <path d="M48 4.5 82 20.3v42L48 88.5 14 62.3v-42Z" fill="none" stroke="#ffffff" stroke-width="1" opacity=".34"/>
+</svg>

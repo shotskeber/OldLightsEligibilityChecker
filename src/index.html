@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Old Lights Eligibility Checker</title>
+    <meta
+      name="description"
+      content="Check whether your Destiny 2 account has playtime in every Old Lights eligibility period."
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="backdrop-glow"></div>
+    <div class="page-shell">
+      <main class="hero-layout">
+        <section class="hero-copy-column">
+          <header class="hero">
+            <h1>
+              <span class="title-top">Old Lights</span>
+              <span class="title-bottom">Eligibility Checker</span>
+            </h1>
+            <p class="hero-copy">
+              This tool checks whether your Bungie account recorded any playtime in each Destiny 2 expansion
+              year. Based on Bungie's Old Lights emblem criteria.
+            </p>
+          </header>
+
+          <section class="criteria-table-panel">
+            <div class="criteria-table-header">
+              <span>Expansion year</span>
+              <span>Date range</span>
+              <span id="time-column-label">Required playtime</span>
+              <span id="eligibility-column-label">Status</span>
+            </div>
+            <div class="criteria-table">
+              <div class="criteria-row" data-period-label="Destiny 2">
+                <div class="criteria-era">
+                  <span class="era-icon era-icon-emoji" aria-hidden="true">⚪</span>
+                  Destiny 2
+                </div>
+                <div class="criteria-dates">Sep 6, 2017 - Sep 3, 2018</div>
+                <div class="criteria-rule-copy">Any amount</div>
+                <div class="criteria-status">Pending</div>
+              </div>
+              <div class="criteria-row" data-period-label="Forsaken">
+                <div class="criteria-era">
+                  <span class="era-icon era-icon-emoji" aria-hidden="true">🪦</span>
+                  Forsaken
+                </div>
+                <div class="criteria-dates">Sep 4, 2018 - Sep 30, 2019</div>
+                <div class="criteria-rule-copy">Any amount</div>
+                <div class="criteria-status">Pending</div>
+              </div>
+              <div class="criteria-row" data-period-label="Shadowkeep">
+                <div class="criteria-era">
+                  <span class="era-icon era-icon-emoji" aria-hidden="true">🌕</span>
+                  Shadowkeep
+                </div>
+                <div class="criteria-dates">Oct 1, 2019 - Nov 9, 2020</div>
+                <div class="criteria-rule-copy">Any amount</div>
+                <div class="criteria-status">Pending</div>
+              </div>
+              <div class="criteria-row" data-period-label="Beyond Light">
+                <div class="criteria-era">
+                  <span class="era-icon era-icon-emoji" aria-hidden="true">🧊</span>
+                  Beyond Light
+                </div>
+                <div class="criteria-dates">Nov 10, 2020 - Feb 21, 2022</div>
+                <div class="criteria-rule-copy">Any amount</div>
+                <div class="criteria-status">Pending</div>
+              </div>
+              <div class="criteria-row" data-period-label="Witch Queen">
+                <div class="criteria-era">
+                  <span class="era-icon era-icon-emoji" aria-hidden="true">👑</span>
+                  Witch Queen
+                </div>
+                <div class="criteria-dates">Feb 22, 2022 - Feb 27, 2023</div>
+                <div class="criteria-rule-copy">Any amount</div>
+                <div class="criteria-status">Pending</div>
+              </div>
+              <div class="criteria-row" data-period-label="Lightfall">
+                <div class="criteria-era">
+                  <span class="era-icon era-icon-emoji" aria-hidden="true">❇️</span>
+                  Lightfall
+                </div>
+                <div class="criteria-dates">Feb 28, 2023 - Jun 3, 2024</div>
+                <div class="criteria-rule-copy">Any amount</div>
+                <div class="criteria-status">Pending</div>
+              </div>
+              <div class="criteria-row" data-period-label="The Final Shape">
+                <div class="criteria-era">
+                  <span class="era-icon era-icon-emoji" aria-hidden="true">🔺</span>
+                  The Final Shape
+                </div>
+                <div class="criteria-dates">Jun 4, 2024 - Jul 14, 2025</div>
+                <div class="criteria-rule-copy">Any amount</div>
+                <div class="criteria-status">Pending</div>
+              </div>
+              <div class="criteria-row" data-period-label="The Year of Prophecy">
+                <div class="criteria-era">
+                  <span class="era-icon era-icon-emoji" aria-hidden="true">👁️</span>
+                  The Year of Prophecy
+                </div>
+                <div class="criteria-dates">Jul 15, 2025 - Jun 8, 2026</div>
+                <div class="criteria-rule-copy">Any amount</div>
+                <div class="criteria-status">Pending</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="action-row">
+            <div class="action-stack">
+              <div class="hero-actions">
+                <button id="sign-in-button" class="primary-button" type="button">
+                  <span class="button-mark" aria-hidden="true"></span>
+                  <span class="button-copy">Sign in with Bungie</span>
+                </button>
+                <button id="sign-out-button" class="secondary-button" type="button" hidden>Start over</button>
+              </div>
+              <p id="config-warning" class="warning-banner" hidden>
+                Bungie configuration not detected. Add your public Bungie client ID and API key before using the
+                checker.
+              </p>
+              <div id="config-details" class="config-details" hidden></div>
+              <div id="error-banner" class="error-banner" hidden></div>
+            </div>
+
+            <section class="status-panel">
+              <div class="status-row">
+                <span class="status-label">Status</span>
+                <strong id="status-text">Ready to check your account</strong>
+              </div>
+              <p id="status-detail" class="status-detail">
+                We compute everything live and do not save account results.
+              </p>
+              <div id="account-summary" class="account-summary" hidden></div>
+            </section>
+          </section>
+        </section>
+
+        <aside class="criteria-panel">
+          <div class="criteria-panel-inner">
+            <div class="criteria-header">
+              <span>About Old Lights</span>
+            </div>
+            <p class="about-copy">
+              The Old Lights emblem will be awarded to any player whose account recorded any amount of
+              playtime in each of Destiny 2's expansion years.
+            </p>
+            <div class="reward-card">
+              <span class="reward-label">Once eligible, you will receive:</span>
+              <div class="reward-item">
+                <div class="reward-emblem" aria-hidden="true"></div>
+                <div>
+                  <strong>Old Lights</strong>
+                  <span>Emblem</span>
+                </div>
+              </div>
+              <div class="reward-item">
+                <div class="reward-emote" aria-hidden="true"></div>
+                <div>
+                  <strong>Elemental Qi</strong>
+                  <span>Emote</span>
+                </div>
+              </div>
+            </div>
+            <p class="criteria-note">
+              Rewards are granted in waves. Keep an eye on Bungie.net for the latest updates.
+            </p>
+            <section class="disclaimer-panel">
+              <div class="disclaimer-mark" aria-hidden="true"></div>
+              <div>
+                <p class="disclaimer-title">Unofficial community tool</p>
+                <p class="disclaimer-copy">
+                  This is an independent fan project and is not affiliated with Bungie. Account data is checked
+                  live and not stored.
+                </p>
+              </div>
+            </section>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <div id="loading-modal" class="loading-modal" role="status" aria-live="polite" aria-modal="true" hidden>
+      <div class="loading-panel">
+        <div class="loading-spinner" aria-hidden="true"></div>
+        <div>
+          <p class="loading-kicker">Bungie network</p>
+          <strong id="loading-title">Checking Destiny history</strong>
+          <p id="loading-detail">
+            Fetching memberships, characters, and activity pages. This can take a little while.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script src="/config.js"></script>
+    <script defer src="/_vercel/insights/script.js"></script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
