@@ -357,6 +357,15 @@ select {
   border-top: 1px solid var(--line);
 }
 
+.sharing-psa {
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid rgba(140, 153, 192, 0.14);
+  color: rgba(174, 182, 211, 0.88);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
 .summary-name {
   font-size: 1.3rem;
   font-weight: 700;

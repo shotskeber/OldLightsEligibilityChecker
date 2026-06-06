@@ -16,6 +16,7 @@ const statusPanel = document.querySelector('.status-panel');
 const statusText = document.querySelector('#status-text');
 const statusDetail = document.querySelector('#status-detail');
 const accountSummary = document.querySelector('#account-summary');
+const sharingPsa = document.querySelector('#sharing-psa');
 const errorBanner = document.querySelector('#error-banner');
 const timeColumnLabel = document.querySelector('#time-column-label');
 const eligibilityColumnLabel = document.querySelector('#eligibility-column-label');
@@ -47,6 +48,7 @@ signOutButton.addEventListener('click', () => {
   clearError();
   hideLoadingModal();
   resetEligibilityTable();
+  sharingPsa.hidden = true;
   setStatus('Ready to check your account', 'We compute everything live and do not save account results.');
 });
 
@@ -84,6 +86,7 @@ async function initializeApp() {
 
     renderAccountSummary(result.account);
     renderEligibility(result);
+    sharingPsa.hidden = false;
     hideLoadingModal();
     setStatus(
       result.eligible ? 'Eligible for Old Lights' : 'Not currently eligible',
@@ -123,6 +126,7 @@ function clearError() {
 
 function showError(message) {
   accountSummary.hidden = true;
+  sharingPsa.hidden = true;
   errorBanner.hidden = false;
   errorBanner.textContent = message;
   setStatus('Unable to complete check', 'Review the message below and try again when you are ready.');
@@ -143,6 +147,7 @@ function resetEligibilityTable() {
   timeColumnLabel.textContent = 'Required playtime';
   eligibilityColumnLabel.textContent = 'Status';
   statusPanel.dataset.verdict = '';
+  sharingPsa.hidden = true;
 
   for (const rowState of initialRows) {
     const row = criteriaRows.find((candidate) => candidate.dataset.periodLabel === rowState.label);

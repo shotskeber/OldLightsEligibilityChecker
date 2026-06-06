@@ -24,13 +24,13 @@ test('buildActivityWindow derives start and end from period, startSeconds, and t
 test('calculateEligibility counts playtime on exact period boundaries', () => {
   const result = calculateEligibility([
     {
-      start: new Date('2017-09-06T00:00:00.000Z'),
-      end: new Date('2017-09-06T00:05:00.000Z'),
+      start: new Date('2017-09-06T17:00:00.000Z'),
+      end: new Date('2017-09-06T17:05:00.000Z'),
       secondsPlayed: 300,
     },
     {
-      start: new Date('2026-06-08T23:59:00.000Z'),
-      end: new Date('2026-06-08T23:59:30.000Z'),
+      start: new Date('2026-06-09T16:59:00.000Z'),
+      end: new Date('2026-06-09T16:59:30.000Z'),
       secondsPlayed: 30,
     },
   ]);
@@ -62,8 +62,8 @@ test('calculateEligibility aggregates playtime across multiple activities in the
 test('calculateEligibility splits playtime across adjacent expansion windows when a session crosses midnight boundary', () => {
   const result = calculateEligibility([
     {
-      start: new Date('2024-06-03T23:55:00.000Z'),
-      end: new Date('2024-06-04T00:05:00.000Z'),
+      start: new Date('2024-06-04T16:55:00.000Z'),
+      end: new Date('2024-06-04T17:05:00.000Z'),
       secondsPlayed: 600,
     },
   ]);
@@ -79,8 +79,8 @@ test('calculateEligibility splits playtime across adjacent expansion windows whe
 
 test('calculateEligibility marks accounts ineligible when any window has zero playtime', () => {
   const activities = OLD_LIGHTS_PERIODS.map((period, index) => ({
-    start: new Date(`${period.start}T00:00:00.000Z`),
-    end: new Date(`${period.start}T00:05:00.000Z`),
+    start: new Date(period.start),
+    end: new Date(new Date(period.start).getTime() + 5 * 60 * 1000),
     secondsPlayed: index === 3 ? 0 : 300,
   })).filter((activity) => activity.secondsPlayed > 0);
 
@@ -95,8 +95,8 @@ test('calculateEligibility marks accounts ineligible when any window has zero pl
 
 test('calculateEligibility marks accounts eligible when all windows have non-zero playtime', () => {
   const activities = OLD_LIGHTS_PERIODS.map((period) => ({
-    start: new Date(`${period.start}T00:00:00.000Z`),
-    end: new Date(`${period.start}T00:02:00.000Z`),
+    start: new Date(period.start),
+    end: new Date(new Date(period.start).getTime() + 2 * 60 * 1000),
     secondsPlayed: 120,
   }));
 
@@ -104,4 +104,27 @@ test('calculateEligibility marks accounts eligible when all windows have non-zer
 
   assert.equal(result.eligible, true);
   assert.ok(result.periods.every((period) => period.isEligible));
+});
+
+test('calculateEligibility excludes playtime before a 17:00 UTC expansion boundary', () => {
+  const result = calculateEligibility([
+    {
+      start: new Date('2018-09-04T16:45:00.000Z'),
+      end: new Date('2018-09-04T16:55:00.000Z'),
+      secondsPlayed: 600,
+    },
+    {
+      start: new Date('2018-09-04T17:05:00.000Z'),
+      end: new Date('2018-09-04T17:15:00.000Z'),
+      secondsPlayed: 600,
+    },
+  ]);
+
+  const destiny2 = result.periods.find((period) => period.label === 'Destiny 2');
+  const forsaken = result.periods.find((period) => period.label === 'Forsaken');
+
+  assert.ok(destiny2);
+  assert.ok(forsaken);
+  assert.equal(destiny2.totalSeconds, 600);
+  assert.equal(forsaken.totalSeconds, 600);
 });

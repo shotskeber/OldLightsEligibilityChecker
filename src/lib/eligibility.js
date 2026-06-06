@@ -1,21 +1,13 @@
 export const OLD_LIGHTS_PERIODS = [
-  { label: 'Destiny 2', start: '2017-09-06', end: '2018-09-03' },
-  { label: 'Forsaken', start: '2018-09-04', end: '2019-09-30' },
-  { label: 'Shadowkeep', start: '2019-10-01', end: '2020-11-09' },
-  { label: 'Beyond Light', start: '2020-11-10', end: '2022-02-21' },
-  { label: 'Witch Queen', start: '2022-02-22', end: '2023-02-27' },
-  { label: 'Lightfall', start: '2023-02-28', end: '2024-06-03' },
-  { label: 'The Final Shape', start: '2024-06-04', end: '2025-07-14' },
-  { label: 'The Year of Prophecy', start: '2025-07-15', end: '2026-06-08' },
+  { label: 'Destiny 2', start: '2017-09-06T17:00:00.000Z', end: '2018-09-04T17:00:00.000Z' },
+  { label: 'Forsaken', start: '2018-09-04T17:00:00.000Z', end: '2019-10-01T17:00:00.000Z' },
+  { label: 'Shadowkeep', start: '2019-10-01T17:00:00.000Z', end: '2020-11-10T17:00:00.000Z' },
+  { label: 'Beyond Light', start: '2020-11-10T17:00:00.000Z', end: '2022-02-22T17:00:00.000Z' },
+  { label: 'Witch Queen', start: '2022-02-22T17:00:00.000Z', end: '2023-02-28T17:00:00.000Z' },
+  { label: 'Lightfall', start: '2023-02-28T17:00:00.000Z', end: '2024-06-04T17:00:00.000Z' },
+  { label: 'The Final Shape', start: '2024-06-04T17:00:00.000Z', end: '2025-07-15T17:00:00.000Z' },
+  { label: 'The Year of Prophecy', start: '2025-07-15T17:00:00.000Z', end: '2026-06-09T17:00:00.000Z' },
 ];
-
-function startOfUtcDay(isoDate) {
-  return new Date(`${isoDate}T00:00:00.000Z`);
-}
-
-function endOfUtcDay(isoDate) {
-  return new Date(`${isoDate}T23:59:59.999Z`);
-}
 
 export function buildActivityWindow(activity) {
   const periodStart = new Date(activity.period);
@@ -63,8 +55,8 @@ function getOverlapSeconds(activity, periodStart, periodEnd) {
 
 export function calculateEligibility(activities) {
   const periods = OLD_LIGHTS_PERIODS.map((period) => {
-    const start = startOfUtcDay(period.start);
-    const end = endOfUtcDay(period.end);
+    const start = new Date(period.start);
+    const end = new Date(period.end);
     const totalSeconds = activities.reduce((sum, activity) => {
       return sum + getOverlapSeconds(activity, start, end);
     }, 0);
