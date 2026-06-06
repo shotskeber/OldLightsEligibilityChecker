@@ -139,3 +139,73 @@ test('fetchAccountEligibility skips stale memberships and keeps checking valid l
   assert.equal(result.account.memberships[0].membershipId, 'valid');
   assert.ok(requestedHosts.includes('stats.bungie.net'));
 });
+
+test('fetchAccountEligibility includes merged legacy and deleted character ids without duplicates', async () => {
+  const requestedCharacterIds = [];
+  const responses = new Map([
+    [
+      '/User/GetMembershipsForCurrentUser/',
+      {
+        bungieNetUser: { displayName: 'LegacyGuardian' },
+        destinyMemberships: [{ membershipId: '123', membershipType: 3 }],
+      },
+    ],
+    [
+      '/Destiny2/3/Account/123/Stats/?groups=1',
+      {
+        characters: [{ characterId: 'live-1' }, { characterId: 'live-2' }],
+        mergedAllCharacters: [{ characterId: 'live-2' }, { characterId: 'legacy-1' }],
+        mergedDeletedCharacters: ['legacy-2'],
+      },
+    ],
+    [
+      '/Destiny2/3/Account/123/Character/live-1/Stats/Activities/?count=250&mode=0&page=0',
+      {
+        activities: [
+          {
+            period: '2017-09-06T00:00:00Z',
+            values: {
+              startSeconds: { basic: { value: 0 } },
+              timePlayedSeconds: { basic: { value: 600 } },
+            },
+          },
+        ],
+      },
+    ],
+    ['/Destiny2/3/Account/123/Character/live-1/Stats/Activities/?count=250&mode=0&page=1', { activities: [] }],
+    ['/Destiny2/3/Account/123/Character/live-1/Stats/Activities/?count=250&mode=0&page=2', { activities: [] }],
+    ['/Destiny2/3/Account/123/Character/live-1/Stats/Activities/?count=250&mode=0&page=3', { activities: [] }],
+    ['/Destiny2/3/Account/123/Character/live-2/Stats/Activities/?count=250&mode=0&page=0', { activities: [] }],
+    ['/Destiny2/3/Account/123/Character/live-2/Stats/Activities/?count=250&mode=0&page=1', { activities: [] }],
+    ['/Destiny2/3/Account/123/Character/live-2/Stats/Activities/?count=250&mode=0&page=2', { activities: [] }],
+    ['/Destiny2/3/Account/123/Character/live-2/Stats/Activities/?count=250&mode=0&page=3', { activities: [] }],
+    ['/Destiny2/3/Account/123/Character/legacy-1/Stats/Activities/?count=250&mode=0&page=0', { activities: [] }],
+    ['/Destiny2/3/Account/123/Character/legacy-1/Stats/Activities/?count=250&mode=0&page=1', { activities: [] }],
+    ['/Destiny2/3/Account/123/Character/legacy-1/Stats/Activities/?count=250&mode=0&page=2', { activities: [] }],
+    ['/Destiny2/3/Account/123/Character/legacy-1/Stats/Activities/?count=250&mode=0&page=3', { activities: [] }],
+    ['/Destiny2/3/Account/123/Character/legacy-2/Stats/Activities/?count=250&mode=0&page=0', { activities: [] }],
+    ['/Destiny2/3/Account/123/Character/legacy-2/Stats/Activities/?count=250&mode=0&page=1', { activities: [] }],
+    ['/Destiny2/3/Account/123/Character/legacy-2/Stats/Activities/?count=250&mode=0&page=2', { activities: [] }],
+    ['/Destiny2/3/Account/123/Character/legacy-2/Stats/Activities/?count=250&mode=0&page=3', { activities: [] }],
+  ]);
+
+  globalThis.fetch = async (url) => {
+    const parsedUrl = new URL(url);
+    const pathname = parsedUrl.pathname.replace(/^\/Platform/, '') + parsedUrl.search;
+    const match = pathname.match(/\/Character\/([^/]+)\//);
+    if (match) {
+      requestedCharacterIds.push(match[1]);
+    }
+
+    assert.ok(responses.has(pathname), `Unexpected request: ${pathname}`);
+    return {
+      ok: true,
+      json: async () => ({ ErrorCode: 1, Response: responses.get(pathname) }),
+    };
+  };
+
+  const result = await fetchAccountEligibility('token');
+
+  assert.equal(result.account.characterCount, 4);
+  assert.deepEqual([...new Set(requestedCharacterIds)].sort(), ['legacy-1', 'legacy-2', 'live-1', 'live-2']);
+});

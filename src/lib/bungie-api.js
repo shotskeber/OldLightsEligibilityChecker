@@ -248,12 +248,12 @@ export async function fetchAccountEligibility(token, options = {}) {
       continue;
     }
 
-    const characters = history?.characters ?? [];
+    const characters = collectCharacterRefs(history);
     if (!characters.length) {
       skippedMemberships.push({
         membershipId: membership.membershipId,
         membershipType: membership.membershipType,
-        reason: 'No characters returned.',
+        reason: 'No character history returned.',
       });
       membershipsDone += 1;
       continue;
@@ -366,6 +366,57 @@ async function fetchCharacterActivityHistory(token, membershipType, membershipId
   }
 
   return windows;
+}
+
+function collectCharacterRefs(history) {
+  const seenCharacterIds = new Set();
+  const characters = [];
+
+  for (const source of [history?.characters, history?.mergedAllCharacters, history?.mergedDeletedCharacters]) {
+    for (const character of normalizeCharacterCollection(source)) {
+      const characterId = extractCharacterId(character);
+      if (!characterId || seenCharacterIds.has(characterId)) {
+        continue;
+      }
+
+      seenCharacterIds.add(characterId);
+      characters.push({ characterId });
+    }
+  }
+
+  return characters;
+}
+
+function normalizeCharacterCollection(collection) {
+  if (!collection) {
+    return [];
+  }
+
+  if (Array.isArray(collection)) {
+    return collection;
+  }
+
+  if (typeof collection === 'object') {
+    return Object.values(collection);
+  }
+
+  return [];
+}
+
+function extractCharacterId(character) {
+  if (!character) {
+    return '';
+  }
+
+  if (typeof character === 'string' || typeof character === 'number') {
+    return String(character);
+  }
+
+  if (typeof character === 'object' && character.characterId != null) {
+    return String(character.characterId);
+  }
+
+  return '';
 }
 
 export function getMembershipTypeLabel(membershipType) {
