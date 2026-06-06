@@ -7,6 +7,12 @@ import {
   getPublicConfigStatus,
   handleBungieRedirect,
 } from './lib/bungie-api.js';
+import {
+  OLD_LIGHTS_PERIODS,
+  calculateActivityStats,
+  calculateEligibility,
+  calculateUiHints,
+} from './lib/eligibility.js';
 
 const signInButton = document.querySelector('#sign-in-button');
 const signOutButton = document.querySelector('#sign-out-button');
@@ -41,6 +47,7 @@ const EXPANSION_MARKERS = new Map([
   ['The Final Shape', '\uD83D\uDD3A'],
   ['The Year of Prophecy', '\uD83D\uDC41\uFE0F'],
 ]);
+const LOCAL_DEMO_MODES = new Set(['eligible', 'almost']);
 
 const initialRows = criteriaRows.map((row) => ({
   label: row.dataset.periodLabel,
@@ -68,6 +75,7 @@ signOutButton.addEventListener('click', () => {
   clearError();
   hideLoadingModal();
   hideAlmostThereModal();
+  document.body.classList.remove('has-results', 'is-demo-mode');
   resetEligibilityTable();
   resetActivityStats();
   sharingPsa.hidden = true;
@@ -80,6 +88,12 @@ resetActivityStats();
 await initializeApp();
 
 async function initializeApp() {
+  const demoMode = getLocalDemoMode();
+  if (demoMode) {
+    renderLocalDemo(demoMode);
+    return;
+  }
+
   if (!hasBungieConfig()) {
     showConfigWarning();
   }
@@ -108,18 +122,8 @@ async function initializeApp() {
       onProgress: updateLoadingProgress,
     });
 
-    renderAccountSummary(result.account);
-    renderEligibility(result);
-    renderActivityStats(result.activityStats);
-    sharingPsa.hidden = false;
+    renderLoadedResult(result);
     hideLoadingModal();
-    setStatus(
-      result.eligible ? 'Eligible for Old Lights' : 'Not currently eligible',
-      result.eligible
-        ? 'Your account has recorded playtime in every listed expansion year.'
-        : 'At least one listed expansion year has no recorded playtime.'
-    );
-    statusPanel.dataset.verdict = result.eligible ? 'eligible' : 'missing';
     maybeShowAlmostThereModal(result.uiHints);
   } catch (error) {
     hideLoadingModal();
@@ -154,12 +158,28 @@ function clearError() {
 function showError(message) {
   accountSummary.hidden = true;
   sharingPsa.hidden = true;
+  document.body.classList.remove('has-results');
   resetActivityStats();
   hideAlmostThereModal();
   errorBanner.hidden = false;
   errorBanner.textContent = message;
   setStatus('Unable to complete check', 'Review the message below and try again when you are ready.');
   resetEligibilityTable();
+}
+
+function renderLoadedResult(result) {
+  document.body.classList.add('has-results');
+  renderAccountSummary(result.account);
+  renderEligibility(result);
+  renderActivityStats(result.activityStats);
+  sharingPsa.hidden = false;
+  setStatus(
+    result.eligible ? 'Eligible for Old Lights' : 'Not currently eligible',
+    result.eligible
+      ? 'Your account has recorded playtime in every listed expansion year.'
+      : 'At least one listed expansion year has no recorded playtime.'
+  );
+  statusPanel.dataset.verdict = result.eligible ? 'eligible' : 'missing';
 }
 
 function renderAccountSummary(account) {
@@ -250,6 +270,7 @@ function renderActivityStats(activityStats) {
     .map((expansion) => {
       const firstDate = expansion.firstActivityDate ? formatShortDate(expansion.firstActivityDate) : 'None';
       const lastDate = expansion.lastActivityDate ? formatShortDate(expansion.lastActivityDate) : 'None';
+      const dateRangeLabel = expansion.activeDayCount > 0 ? `${firstDate} - ${lastDate}` : 'None';
       const timeline = expansion.timelineDays
         .map(
           (isActive, index) =>
@@ -270,8 +291,7 @@ function renderActivityStats(activityStats) {
           >${timeline}</div>
           <div class="timeline-meta">
             <span class="timeline-count">${escapeHtml(formatDayCount(expansion.activeDayCount))}</span>
-            <span class="timeline-dates">First ${escapeHtml(firstDate)}</span>
-            <span class="timeline-dates">Last ${escapeHtml(lastDate)}</span>
+            <span class="timeline-dates">${escapeHtml(dateRangeLabel)}</span>
           </div>
         </div>
       `;
@@ -313,6 +333,100 @@ function maybeShowAlmostThereModal(uiHints) {
   }
 
   almostThereModal.hidden = false;
+}
+
+function getLocalDemoMode() {
+  const host = window.location.hostname;
+  const isLocalHost = host === 'localhost' || host === '127.0.0.1' || host === '[::1]' || host === '';
+  const demoMode = new URL(window.location.href).searchParams.get('demo');
+
+  if (!isLocalHost || !LOCAL_DEMO_MODES.has(demoMode)) {
+    return '';
+  }
+
+  return demoMode;
+}
+
+function renderLocalDemo(mode) {
+  const result = buildLocalDemoResult(mode);
+  document.body.classList.add('is-demo-mode');
+  configWarning.hidden = true;
+  configDetails.hidden = true;
+  signInButton.hidden = true;
+  signOutButton.hidden = false;
+  clearError();
+  hideLoadingModal();
+  resetEligibilityTable();
+  renderLoadedResult(result);
+
+  if (mode === 'almost') {
+    sessionStorage.removeItem(ALMOST_THERE_DISMISSED_KEY);
+  }
+
+  maybeShowAlmostThereModal(result.uiHints);
+}
+
+function buildLocalDemoResult(mode) {
+  const activities = buildLocalDemoActivities(mode);
+  const eligibility = calculateEligibility(activities);
+  const activityStats = calculateActivityStats(activities);
+  const demoNow = new Date('2026-06-08T12:00:00.000Z');
+  const uiHints = calculateUiHints(eligibility.periods, demoNow);
+
+  return {
+    ...eligibility,
+    activityStats,
+    uiHints,
+    account: {
+      displayName: mode === 'almost' ? 'AlmostThereDemo' : 'LocalDemo',
+      characterCount: 4,
+      membershipCount: 2,
+      skippedMembershipCount: 0,
+      memberships: [
+        { membershipType: 3 },
+        { membershipType: 2 },
+      ],
+    },
+  };
+}
+
+function buildLocalDemoActivities(mode) {
+  const activities = [];
+
+  for (const period of OLD_LIGHTS_PERIODS) {
+    if (mode === 'almost' && period.label === 'The Year of Prophecy') {
+      continue;
+    }
+
+    const start = new Date(period.start);
+    const end = new Date(period.end);
+    const totalDays = Math.max(1, Math.floor((end.getTime() - start.getTime()) / 86400000));
+    const stride = Math.max(3, Math.floor(totalDays / 58));
+
+    for (let day = 1; day < totalDays; day += stride) {
+      const activityStart = new Date(start.getTime() + day * 86400000 + 45 * 60000);
+      const activityDurationSeconds = 35 * 60 + (day % 7) * 180;
+      const activityEnd = new Date(activityStart.getTime() + activityDurationSeconds * 1000);
+      activities.push({
+        start: activityStart,
+        end: activityEnd,
+        secondsPlayed: activityDurationSeconds,
+      });
+    }
+
+    for (let day = Math.floor(totalDays * 0.42); day < Math.floor(totalDays * 0.42) + 9; day += 1) {
+      const streakStart = new Date(start.getTime() + day * 86400000 + 70 * 60000);
+      const streakDurationSeconds = 42 * 60;
+      const streakEnd = new Date(streakStart.getTime() + streakDurationSeconds * 1000);
+      activities.push({
+        start: streakStart,
+        end: streakEnd,
+        secondsPlayed: streakDurationSeconds,
+      });
+    }
+  }
+
+  return activities;
 }
 
 function dismissAlmostThereModal() {

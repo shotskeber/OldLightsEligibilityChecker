@@ -14,17 +14,14 @@
     <div class="backdrop-glow"></div>
     <div class="page-shell">
       <main class="hero-layout">
+        <header class="hero">
+          <h1>
+            <span class="title-top">Old Lights</span>
+            <span class="title-bottom">Eligibility Checker</span>
+          </h1>
+        </header>
+
         <section class="hero-copy-column">
-          <header class="hero">
-            <h1>
-              <span class="title-top">Old Lights</span>
-              <span class="title-bottom">Eligibility Checker</span>
-            </h1>
-            <p class="hero-copy">
-              This tool checks whether your Bungie account recorded any playtime in each Destiny 2 expansion
-              year. Based on Bungie's Old Lights emblem criteria.
-            </p>
-          </header>
 
           <section class="criteria-table-panel">
             <div class="criteria-table-header">
@@ -115,40 +112,6 @@
             Eligibility windows use 17:00 UTC release boundaries for each expansion. Playtime before an expansion
             goes live does not count toward that expansion year.
           </p>
-
-          <section class="action-row">
-            <div class="action-stack">
-              <div class="hero-actions">
-                <button id="sign-in-button" class="primary-button" type="button">
-                  <span class="button-mark" aria-hidden="true"></span>
-                  <span class="button-copy">Sign in with Bungie</span>
-                </button>
-                <button id="sign-out-button" class="secondary-button" type="button" hidden>Start over</button>
-              </div>
-              <p id="config-warning" class="warning-banner" hidden>
-                Bungie configuration not detected. Add your public Bungie client ID and API key before using the
-                checker.
-              </p>
-              <div id="config-details" class="config-details" hidden></div>
-              <div id="error-banner" class="error-banner" hidden></div>
-            </div>
-
-            <section class="status-panel">
-              <div class="status-row">
-                <span class="status-label">Status</span>
-                <strong id="status-text">Ready to check your account</strong>
-              </div>
-              <p id="status-detail" class="status-detail">
-                We compute everything live and do not save account results.
-              </p>
-              <div id="account-summary" class="account-summary" hidden></div>
-              <p id="sharing-psa" class="sharing-psa" hidden>
-                If you share your result on Reddit, please look for active megathreads so the subreddit does not
-                get spammed.
-              </p>
-            </section>
-          </section>
-
           <section id="activity-stats-panel" class="activity-stats-panel" hidden>
             <div class="activity-stats-header">
               <span>Detailed Activity Stats</span>
@@ -166,6 +129,39 @@
               <div id="activity-timeline-list" class="activity-timeline-list"></div>
               <p class="activity-stats-footnote">Timelines show daily activity for each expansion year.</p>
             </div>
+          </section>
+        </section>
+
+        <section class="action-row">
+          <div class="action-stack">
+            <div class="hero-actions">
+              <button id="sign-in-button" class="primary-button" type="button">
+                <span class="button-mark" aria-hidden="true"></span>
+                <span class="button-copy">Sign in with Bungie</span>
+              </button>
+              <button id="sign-out-button" class="secondary-button" type="button" hidden>Start over</button>
+            </div>
+            <p id="config-warning" class="warning-banner" hidden>
+              Bungie configuration not detected. Add your public Bungie client ID and API key before using the
+              checker.
+            </p>
+            <div id="config-details" class="config-details" hidden></div>
+            <div id="error-banner" class="error-banner" hidden></div>
+          </div>
+
+          <section class="status-panel">
+            <div class="status-row">
+              <span class="status-label">Status</span>
+              <strong id="status-text">Ready to check your account</strong>
+            </div>
+            <p id="status-detail" class="status-detail">
+              We compute everything live and do not save account results.
+            </p>
+            <div id="account-summary" class="account-summary" hidden></div>
+            <p id="sharing-psa" class="sharing-psa" hidden>
+              If you share your result on Reddit, please look for active megathreads so the subreddit does not
+              get spammed.
+            </p>
           </section>
         </section>
 
