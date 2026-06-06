@@ -893,6 +893,10 @@ select {
   text-align: left;
 }
 
+.mobile-dates {
+  display: none;
+}
+
 .timeline-count {
   color: var(--text);
   font-family: var(--font-display);
@@ -1957,10 +1961,14 @@ body.has-results {
     font-size: 0.76rem;
   }
 
+  .has-results .activity-timeline-list {
+    gap: 4px;
+  }
+
   .has-results .timeline-row {
-    grid-template-columns: minmax(72px, 0.84fr) minmax(0, 1.45fr) minmax(80px, 0.9fr);
+    grid-template-columns: minmax(72px, 0.84fr) minmax(0, 1.45fr) minmax(130px, auto);
     gap: 6px;
-    padding: 6px 0;
+    padding: 2px 0;
     align-items: center;
   }
 
@@ -1981,8 +1989,19 @@ body.has-results {
   }
 
   .has-results .timeline-meta {
-    grid-template-columns: 1fr;
-    gap: 2px;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 4px;
+    align-items: baseline;
+    justify-content: flex-end;
+  }
+
+  .has-results .desktop-dates {
+    display: none;
+  }
+
+  .has-results .mobile-dates {
+    display: inline;
   }
 
   .has-results .timeline-count {

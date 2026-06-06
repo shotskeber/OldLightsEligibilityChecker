@@ -267,14 +267,33 @@ function renderActivityStats(activityStats) {
   ].join('');
 
   activityTimelineList.innerHTML = activityStats.expansions
-    .map((expansion) => {
+    .map((expansion, index) => {
       const firstDate = expansion.firstActivityDate ? formatShortDate(expansion.firstActivityDate) : 'None';
       const lastDate = expansion.lastActivityDate ? formatShortDate(expansion.lastActivityDate) : 'None';
-      const dateRangeLabel = expansion.activeDayCount > 0 ? `${firstDate} - ${lastDate}` : 'None';
+
+      const firstDateNumeric = expansion.firstActivityDate ? formatNumericDate(expansion.firstActivityDate) : 'None';
+      const lastDateNumeric = expansion.lastActivityDate ? formatNumericDate(expansion.lastActivityDate) : 'None';
+
+      let desktopDateRange = '';
+      let mobileDateRange = '';
+
+      if (expansion.activeDayCount > 0) {
+        if (index === 0) {
+          desktopDateRange = `First: ${firstDate} - Last: ${lastDate}`;
+          mobileDateRange = `1st: ${firstDateNumeric} - Last: ${lastDateNumeric}`;
+        } else {
+          desktopDateRange = `${firstDate} - ${lastDate}`;
+          mobileDateRange = `${firstDateNumeric} - ${lastDateNumeric}`;
+        }
+      } else {
+        desktopDateRange = 'None';
+        mobileDateRange = 'None';
+      }
+
       const timeline = expansion.timelineDays
         .map(
-          (isActive, index) =>
-            `<span class="timeline-day ${isActive ? 'is-active' : 'is-inactive'}" style="--timeline-index:${index}" aria-hidden="true"></span>`
+          (isActive, idx) =>
+            `<span class="timeline-day ${isActive ? 'is-active' : 'is-inactive'}" style="--timeline-index:${idx}" aria-hidden="true"></span>`
         )
         .join('');
 
@@ -291,7 +310,8 @@ function renderActivityStats(activityStats) {
           >${timeline}</div>
           <div class="timeline-meta">
             <span class="timeline-count">${escapeHtml(formatDayCount(expansion.activeDayCount))}</span>
-            <span class="timeline-dates">${escapeHtml(dateRangeLabel)}</span>
+            <span class="timeline-dates desktop-dates">${escapeHtml(desktopDateRange)}</span>
+            <span class="timeline-dates mobile-dates">${escapeHtml(mobileDateRange)}</span>
           </div>
         </div>
       `;
@@ -474,6 +494,17 @@ function formatShortDate(isoDay) {
   }).format(new Date(`${isoDay}T00:00:00.000Z`));
 
   return formatted.replace(',', '');
+}
+
+function formatNumericDate(isoDay) {
+  if (!isoDay) {
+    return '';
+  }
+  const date = new Date(`${isoDay}T00:00:00.000Z`);
+  const month = date.getUTCMonth() + 1;
+  const day = date.getUTCDate();
+  const year = String(date.getUTCFullYear()).slice(-2);
+  return `${month}/${day}/${year}`;
 }
 
 function formatNumber(value) {
