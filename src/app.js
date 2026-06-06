@@ -278,13 +278,8 @@ function renderActivityStats(activityStats) {
       let mobileDateRange = '';
 
       if (expansion.activeDayCount > 0) {
-        if (index === 0) {
-          desktopDateRange = `First: ${firstDate} - Last: ${lastDate}`;
-          mobileDateRange = `1st: ${firstDateNumeric} - Last: ${lastDateNumeric}`;
-        } else {
-          desktopDateRange = `${firstDate} - ${lastDate}`;
-          mobileDateRange = `${firstDateNumeric} - ${lastDateNumeric}`;
-        }
+        desktopDateRange = `${firstDate} - ${lastDate}`;
+        mobileDateRange = `${firstDateNumeric} - ${lastDateNumeric}`;
       } else {
         desktopDateRange = 'None';
         mobileDateRange = 'None';

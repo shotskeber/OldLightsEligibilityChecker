@@ -1467,7 +1467,11 @@ body.has-results {
 
   .hero-layout {
     grid-template-columns: 1fr;
-    grid-template-areas: none;
+    grid-template-areas:
+      "hero"
+      "actions"
+      "table"
+      "about";
     gap: 16px;
     min-width: 0;
   }
@@ -1966,7 +1970,7 @@ body.has-results {
   }
 
   .has-results .timeline-row {
-    grid-template-columns: minmax(72px, 0.84fr) minmax(0, 1.45fr) minmax(130px, auto);
+    grid-template-columns: 96px minmax(0, 1fr) 148px;
     gap: 6px;
     padding: 2px 0;
     align-items: center;
@@ -1989,11 +1993,10 @@ body.has-results {
   }
 
   .has-results .timeline-meta {
-    display: flex;
-    flex-wrap: nowrap;
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
     gap: 4px;
     align-items: baseline;
-    justify-content: flex-end;
   }
 
   .has-results .desktop-dates {
@@ -2006,10 +2009,11 @@ body.has-results {
 
   .has-results .timeline-count {
     font-size: 0.78rem;
+    text-align: right;
   }
 
   .has-results .timeline-dates {
-    font-size: 0.68rem;
+    font-size: 0.64rem;
   }
 
   .has-results .activity-stats-footnote {
