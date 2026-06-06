@@ -1,4 +1,4 @@
-import { buildActivityWindow, calculateEligibility } from './eligibility.js';
+import { buildActivityWindow, calculateActivityStats, calculateEligibility, calculateUiHints } from './eligibility.js';
 import { getConfigStatus } from './config-status.js';
 
 const API_ROOT = 'https://www.bungie.net/Platform';
@@ -326,8 +326,25 @@ export async function fetchAccountEligibility(token, options = {}) {
   });
 
   const eligibility = calculateEligibility(activities);
+  let activityStats;
+  try {
+    activityStats = calculateActivityStats(activities);
+  } catch {
+    activityStats = {
+      available: false,
+      firstRecorded: null,
+      lastRecorded: null,
+      totalActiveDays: 0,
+      longestStreak: null,
+      expansions: [],
+    };
+  }
+
+  const uiHints = calculateUiHints(eligibility.periods, options.now ? new Date(options.now) : new Date());
   return {
     ...eligibility,
+    activityStats,
+    uiHints,
     account: {
       displayName,
       membershipCount: usableMemberships.length,

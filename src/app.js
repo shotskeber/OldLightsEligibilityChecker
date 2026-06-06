@@ -20,9 +20,27 @@ const sharingPsa = document.querySelector('#sharing-psa');
 const errorBanner = document.querySelector('#error-banner');
 const timeColumnLabel = document.querySelector('#time-column-label');
 const eligibilityColumnLabel = document.querySelector('#eligibility-column-label');
+const activityStatsPanel = document.querySelector('#activity-stats-panel');
+const activityStatsSummary = document.querySelector('#activity-stats-summary');
+const activityStatsEmpty = document.querySelector('#activity-stats-empty');
+const activityStatsDetail = document.querySelector('#activity-stats-detail');
+const activityTimelineList = document.querySelector('#activity-timeline-list');
 const loadingModal = document.querySelector('#loading-modal');
 const loadingDetail = document.querySelector('#loading-detail');
+const almostThereModal = document.querySelector('#almost-there-modal');
+const almostThereClose = document.querySelector('#almost-there-close');
 const criteriaRows = [...document.querySelectorAll('.criteria-row')];
+const ALMOST_THERE_DISMISSED_KEY = 'old-lights-almost-there-dismissed';
+const EXPANSION_MARKERS = new Map([
+  ['Destiny 2', '\u26AA'],
+  ['Forsaken', '\uD83E\uDEA6'],
+  ['Shadowkeep', '\uD83C\uDF15'],
+  ['Beyond Light', '\uD83E\uDDCA'],
+  ['Witch Queen', '\uD83D\uDC51'],
+  ['Lightfall', '\u2747\uFE0F'],
+  ['The Final Shape', '\uD83D\uDD3A'],
+  ['The Year of Prophecy', '\uD83D\uDC41\uFE0F'],
+]);
 
 const initialRows = criteriaRows.map((row) => ({
   label: row.dataset.periodLabel,
@@ -40,6 +58,8 @@ signInButton.addEventListener('click', () => {
   beginBungieLogin();
 });
 
+almostThereClose.addEventListener('click', dismissAlmostThereModal);
+
 signOutButton.addEventListener('click', () => {
   clearSession();
   accountSummary.hidden = true;
@@ -47,12 +67,16 @@ signOutButton.addEventListener('click', () => {
   signOutButton.hidden = true;
   clearError();
   hideLoadingModal();
+  hideAlmostThereModal();
   resetEligibilityTable();
+  resetActivityStats();
   sharingPsa.hidden = true;
+  sessionStorage.removeItem(ALMOST_THERE_DISMISSED_KEY);
   setStatus('Ready to check your account', 'We compute everything live and do not save account results.');
 });
 
 resetEligibilityTable();
+resetActivityStats();
 await initializeApp();
 
 async function initializeApp() {
@@ -86,6 +110,7 @@ async function initializeApp() {
 
     renderAccountSummary(result.account);
     renderEligibility(result);
+    renderActivityStats(result.activityStats);
     sharingPsa.hidden = false;
     hideLoadingModal();
     setStatus(
@@ -95,8 +120,10 @@ async function initializeApp() {
         : 'At least one listed expansion year has no recorded playtime.'
     );
     statusPanel.dataset.verdict = result.eligible ? 'eligible' : 'missing';
+    maybeShowAlmostThereModal(result.uiHints);
   } catch (error) {
     hideLoadingModal();
+    hideAlmostThereModal();
     showError(error.message);
     signInButton.hidden = false;
     signOutButton.hidden = true;
@@ -127,6 +154,8 @@ function clearError() {
 function showError(message) {
   accountSummary.hidden = true;
   sharingPsa.hidden = true;
+  resetActivityStats();
+  hideAlmostThereModal();
   errorBanner.hidden = false;
   errorBanner.textContent = message;
   setStatus('Unable to complete check', 'Review the message below and try again when you are ready.');
@@ -155,6 +184,14 @@ function resetEligibilityTable() {
     row.querySelector('.criteria-rule-copy').textContent = rowState.required;
     row.querySelector('.criteria-status').textContent = rowState.status;
   }
+}
+
+function resetActivityStats() {
+  activityStatsPanel.hidden = true;
+  activityStatsSummary.innerHTML = '';
+  activityTimelineList.innerHTML = '';
+  activityStatsEmpty.hidden = true;
+  activityStatsDetail.hidden = true;
 }
 
 function markEligibilityTableLoading() {
@@ -188,6 +225,62 @@ function renderEligibility(result) {
   }
 }
 
+function renderActivityStats(activityStats) {
+  resetActivityStats();
+  activityStatsPanel.hidden = false;
+
+  if (!activityStats?.available) {
+    activityStatsEmpty.hidden = false;
+    return;
+  }
+
+  activityStatsSummary.innerHTML = [
+    renderStatCard('First Recorded', formatLongDate(activityStats.firstRecorded?.date), activityStats.firstRecorded?.expansionLabel, 'calendar'),
+    renderStatCard('Last Recorded', formatLongDate(activityStats.lastRecorded?.date), activityStats.lastRecorded?.expansionLabel, 'calendar'),
+    renderStatCard('Total Active Days', formatNumber(activityStats.totalActiveDays), 'Across all years', 'signal'),
+    renderStatCard(
+      'Longest Streak',
+      formatDayCount(activityStats.longestStreak?.days ?? 0),
+      activityStats.longestStreak?.expansionLabel ?? 'No streak recorded',
+      'flame'
+    ),
+  ].join('');
+
+  activityTimelineList.innerHTML = activityStats.expansions
+    .map((expansion) => {
+      const firstDate = expansion.firstActivityDate ? formatShortDate(expansion.firstActivityDate) : 'None';
+      const lastDate = expansion.lastActivityDate ? formatShortDate(expansion.lastActivityDate) : 'None';
+      const timeline = expansion.timelineDays
+        .map(
+          (isActive, index) =>
+            `<span class="timeline-day ${isActive ? 'is-active' : 'is-inactive'}" style="--timeline-index:${index}" aria-hidden="true"></span>`
+        )
+        .join('');
+
+      return `
+        <div class="timeline-row">
+          <div class="timeline-era">
+            <span class="timeline-era-mark" aria-hidden="true">${escapeHtml(EXPANSION_MARKERS.get(expansion.label) ?? '')}</span>
+            <span>${escapeHtml(expansion.label)}</span>
+          </div>
+          <div
+            class="timeline-track"
+            style="--timeline-length:${expansion.timelineDays.length || 1}"
+            aria-label="${escapeHtml(expansion.label)} activity timeline"
+          >${timeline}</div>
+          <div class="timeline-meta">
+            <span class="timeline-count">${escapeHtml(formatDayCount(expansion.activeDayCount))}</span>
+            <span class="timeline-dates">First ${escapeHtml(firstDate)}</span>
+            <span class="timeline-dates">Last ${escapeHtml(lastDate)}</span>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+
+  activityStatsDetail.hidden = false;
+}
+
 function showLoadingModal(message) {
   loadingDetail.textContent = message;
   loadingModal.hidden = false;
@@ -207,6 +300,74 @@ function updateLoadingProgress(progress) {
   }
 
   showLoadingModal(parts.join(' - '));
+}
+
+function maybeShowAlmostThereModal(uiHints) {
+  if (!uiHints?.almostThere) {
+    hideAlmostThereModal();
+    return;
+  }
+
+  if (sessionStorage.getItem(ALMOST_THERE_DISMISSED_KEY) === '1') {
+    return;
+  }
+
+  almostThereModal.hidden = false;
+}
+
+function dismissAlmostThereModal() {
+  sessionStorage.setItem(ALMOST_THERE_DISMISSED_KEY, '1');
+  hideAlmostThereModal();
+}
+
+function hideAlmostThereModal() {
+  almostThereModal.hidden = true;
+}
+
+function renderStatCard(label, value, detail, tone) {
+  return `
+    <article class="stats-card stats-card-${tone}">
+      <span class="stats-card-label">${escapeHtml(label)}</span>
+      <strong class="stats-card-value">${escapeHtml(value)}</strong>
+      <span class="stats-card-detail">${escapeHtml(detail)}</span>
+    </article>
+  `;
+}
+
+function formatLongDate(isoDay) {
+  if (!isoDay) {
+    return 'No activity found';
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(`${isoDay}T00:00:00.000Z`));
+}
+
+function formatShortDate(isoDay) {
+  if (!isoDay) {
+    return 'None';
+  }
+
+  const formatted = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: '2-digit',
+    timeZone: 'UTC',
+  }).format(new Date(`${isoDay}T00:00:00.000Z`));
+
+  return formatted.replace(',', '');
+}
+
+function formatNumber(value) {
+  return new Intl.NumberFormat('en-US').format(value ?? 0);
+}
+
+function formatDayCount(value) {
+  return `${formatNumber(value ?? 0)}d`;
 }
 
 function escapeHtml(value) {

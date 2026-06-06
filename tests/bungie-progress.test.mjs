@@ -37,7 +37,7 @@ test('fetchAccountEligibility reports progress while fetching activity pages', a
       {
         activities: [
           {
-            period: '2017-09-06T00:00:00Z',
+            period: '2017-09-06T18:00:00Z',
             values: {
               startSeconds: { basic: { value: 0 } },
               timePlayedSeconds: { basic: { value: 3600 } },
@@ -66,6 +66,8 @@ test('fetchAccountEligibility reports progress while fetching activity pages', a
   });
 
   assert.equal(result.account.displayName, 'TestGuardian');
+  assert.equal(result.activityStats.available, true);
+  assert.equal(typeof result.uiHints.almostThere, 'boolean');
   assert.ok(progressEvents.some((event) => event.phase === 'activity-history'));
   assert.ok(progressEvents.some((event) => event.phase === 'calculating'));
   assert.equal(progressEvents.at(-1).pagesFetched, 4);

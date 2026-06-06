@@ -102,7 +102,7 @@
                   <span class="era-icon era-icon-emoji" aria-hidden="true">👁️</span>
                   The Year of Prophecy
                 </div>
-                <div class="criteria-dates">Jul 15, 2025 - Jun 8, 2026</div>
+                <div class="criteria-dates">Jul 15, 2025 - Jun 9, 2026</div>
                 <div class="criteria-rule-copy">Any amount</div>
                 <div class="criteria-status">Pending</div>
               </div>
@@ -147,6 +147,25 @@
                 get spammed.
               </p>
             </section>
+          </section>
+
+          <section id="activity-stats-panel" class="activity-stats-panel" hidden>
+            <div class="activity-stats-header">
+              <span>Detailed Activity Stats</span>
+            </div>
+            <div id="activity-stats-summary" class="activity-stats-summary"></div>
+            <div id="activity-stats-empty" class="activity-stats-empty" hidden>
+              Detailed day-by-day activity stats were not available for this account.
+            </div>
+            <div id="activity-stats-detail" class="activity-stats-detail" hidden>
+              <div class="activity-legend">
+                <span class="legend-item"><span class="legend-swatch legend-swatch-active"></span>Active day</span>
+                <span class="legend-item"><span class="legend-swatch legend-swatch-inactive"></span>Inactive day</span>
+                <span class="legend-kicker">Timeline by expansion year</span>
+              </div>
+              <div id="activity-timeline-list" class="activity-timeline-list"></div>
+              <p class="activity-stats-footnote">Timelines show daily activity for each expansion year.</p>
+            </div>
           </section>
         </section>
 
@@ -212,6 +231,26 @@
             Fetching memberships, characters, and activity pages. This can take a little while.
           </p>
         </div>
+      </div>
+    </div>
+
+    <div id="almost-there-modal" class="almost-there-modal" role="dialog" aria-modal="true" hidden>
+      <div class="almost-there-panel">
+        <button id="almost-there-close" class="almost-there-close" type="button" aria-label="Close popup">×</button>
+        <p class="almost-there-kicker">Almost there</p>
+        <strong class="almost-there-title">You still have time</strong>
+        <p class="almost-there-subtext">You’re missing activity in only one expansion year.</p>
+        <div class="almost-there-card">
+          <div class="almost-there-card-mark" aria-hidden="true"></div>
+          <div>
+            <strong>The Year of Prophecy</strong>
+            <span>Jul 15, 2025 - Jun 9, 2026</span>
+          </div>
+        </div>
+        <p class="almost-there-body">
+          Your account has activity in every other expansion year. Log in to Destiny 2 before June 9 to record
+          any playtime during The Year of Prophecy and qualify for Old Lights rewards.
+        </p>
       </div>
     </div>
 
