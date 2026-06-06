@@ -323,11 +323,15 @@ select {
 }
 
 .status-panel[data-verdict='eligible'] {
-  border-color: rgba(122, 215, 181, 0.58);
+  border-color: rgba(122, 215, 181, 0.72);
+  background: linear-gradient(180deg, rgba(8, 26, 18, 0.92), rgba(4, 16, 11, 0.95));
+  box-shadow: 0 0 30px rgba(122, 215, 181, 0.15), var(--shadow);
 }
 
 .status-panel[data-verdict='missing'] {
-  border-color: rgba(242, 161, 127, 0.58);
+  border-color: rgba(242, 161, 127, 0.72);
+  background: linear-gradient(180deg, rgba(28, 12, 12, 0.92), rgba(18, 6, 6, 0.95));
+  box-shadow: 0 0 30px rgba(242, 161, 127, 0.15), var(--shadow);
 }
 
 .status-row {
@@ -1191,8 +1195,9 @@ body.has-results {
   grid-template-columns: minmax(0, 1fr) minmax(390px, 470px);
   grid-template-areas:
     "hero hero"
+    "left-col status"
     "left-col about"
-    "left-col actions";
+    "left-col buttons";
   gap: 12px 18px;
   align-items: start;
   margin: auto 0;
@@ -1227,15 +1232,7 @@ body.has-results {
 }
 
 .has-results .action-row {
-  grid-area: actions;
-  position: static;
-  width: auto;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-  align-items: start;
-  order: 0;
-  z-index: 3;
+  display: contents;
 }
 
 .has-results .criteria-table-panel {
@@ -1272,6 +1269,7 @@ body.has-results {
 }
 
 .has-results .status-panel {
+  grid-area: status;
   display: grid;
   grid-template-columns: 1fr;
   order: 1;
@@ -1281,6 +1279,7 @@ body.has-results {
 }
 
 .has-results .action-stack {
+  grid-area: buttons;
   order: 2;
   align-self: center;
 }
@@ -2042,6 +2041,11 @@ body.has-results {
 
   .has-results .hero-layout {
     grid-template-columns: minmax(0, 1fr) minmax(440px, 500px);
+    grid-template-areas:
+      "hero hero"
+      "left-col status"
+      "left-col about"
+      "left-col buttons";
     gap: 20px 32px;
   }
 
