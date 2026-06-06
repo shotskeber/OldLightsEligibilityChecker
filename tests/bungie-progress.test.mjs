@@ -209,3 +209,95 @@ test('fetchAccountEligibility includes merged legacy and deleted character ids w
   assert.equal(result.account.characterCount, 4);
   assert.deepEqual([...new Set(requestedCharacterIds)].sort(), ['legacy-1', 'legacy-2', 'live-1', 'live-2']);
 });
+
+test('fetchAccountEligibility merges linked profiles without double-counting duplicate memberships', async () => {
+  const statsRequests = [];
+  const responses = new Map([
+    [
+      '/User/GetMembershipsForCurrentUser/',
+      {
+        bungieNetUser: { displayName: 'LinkedGuardian' },
+        destinyMemberships: [{ membershipId: 'steam-main', membershipType: 3 }],
+      },
+    ],
+    [
+      '/Destiny2/3/Profile/steam-main/LinkedProfiles/?getAllMemberships=true',
+      {
+        profiles: [
+          { membershipId: 'steam-main', membershipType: 3 },
+          { membershipId: 'psn-side', membershipType: 2 },
+        ],
+      },
+    ],
+    [
+      '/Destiny2/3/Account/steam-main/Stats/?groups=1',
+      {
+        characters: [{ characterId: 'steam-char' }],
+      },
+    ],
+    [
+      '/Destiny2/2/Account/psn-side/Stats/?groups=1',
+      {
+        characters: [{ characterId: 'psn-char' }],
+      },
+    ],
+    [
+      '/Destiny2/3/Account/steam-main/Character/steam-char/Stats/Activities/?count=250&mode=0&page=0',
+      {
+        activities: [
+          {
+            period: '2017-09-06T00:00:00Z',
+            values: {
+              startSeconds: { basic: { value: 0 } },
+              timePlayedSeconds: { basic: { value: 1200 } },
+            },
+          },
+        ],
+      },
+    ],
+    ['/Destiny2/3/Account/steam-main/Character/steam-char/Stats/Activities/?count=250&mode=0&page=1', { activities: [] }],
+    ['/Destiny2/3/Account/steam-main/Character/steam-char/Stats/Activities/?count=250&mode=0&page=2', { activities: [] }],
+    ['/Destiny2/3/Account/steam-main/Character/steam-char/Stats/Activities/?count=250&mode=0&page=3', { activities: [] }],
+    [
+      '/Destiny2/2/Account/psn-side/Character/psn-char/Stats/Activities/?count=250&mode=0&page=0',
+      {
+        activities: [
+          {
+            period: '2018-05-10T00:00:00Z',
+            values: {
+              startSeconds: { basic: { value: 0 } },
+              timePlayedSeconds: { basic: { value: 900 } },
+            },
+          },
+        ],
+      },
+    ],
+    ['/Destiny2/2/Account/psn-side/Character/psn-char/Stats/Activities/?count=250&mode=0&page=1', { activities: [] }],
+    ['/Destiny2/2/Account/psn-side/Character/psn-char/Stats/Activities/?count=250&mode=0&page=2', { activities: [] }],
+    ['/Destiny2/2/Account/psn-side/Character/psn-char/Stats/Activities/?count=250&mode=0&page=3', { activities: [] }],
+  ]);
+
+  globalThis.fetch = async (url) => {
+    const parsedUrl = new URL(url);
+    const pathname = parsedUrl.pathname.replace(/^\/Platform/, '') + parsedUrl.search;
+
+    if (pathname.includes('/Stats/?groups=1')) {
+      statsRequests.push(pathname);
+    }
+
+    assert.ok(responses.has(pathname), `Unexpected request: ${pathname}`);
+    return {
+      ok: true,
+      json: async () => ({ ErrorCode: 1, Response: responses.get(pathname) }),
+    };
+  };
+
+  const result = await fetchAccountEligibility('token');
+
+  assert.equal(result.account.membershipCount, 2);
+  assert.equal(result.account.characterCount, 2);
+  assert.deepEqual(statsRequests.sort(), [
+    '/Destiny2/2/Account/psn-side/Stats/?groups=1',
+    '/Destiny2/3/Account/steam-main/Stats/?groups=1',
+  ]);
+});

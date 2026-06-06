@@ -190,7 +190,8 @@ export async function fetchAccountEligibility(token, options = {}) {
   const emitProgress = options.onProgress ?? (() => {});
   emitProgress({ phase: 'memberships', message: 'Finding linked Destiny memberships.' });
   const membershipResponse = await requestJson('/User/GetMembershipsForCurrentUser/', token);
-  const destinyMemberships = membershipResponse?.destinyMemberships ?? [];
+  const baseMemberships = membershipResponse?.destinyMemberships ?? [];
+  const destinyMemberships = await expandLinkedMemberships(token, baseMemberships, emitProgress);
 
   if (!destinyMemberships.length) {
     throw new Error(
@@ -341,6 +342,35 @@ export async function fetchAccountEligibility(token, options = {}) {
   };
 }
 
+async function expandLinkedMemberships(token, baseMemberships, emitProgress) {
+  const seenMemberships = new Set();
+  const memberships = [];
+
+  for (const membership of baseMemberships) {
+    addMembershipIfUnique(memberships, seenMemberships, membership);
+  }
+
+  for (const membership of baseMemberships) {
+    emitProgress({
+      phase: 'memberships',
+      message: `Checking linked profiles for ${getMembershipTypeLabel(membership.membershipType)}.`,
+      membershipsDone: 0,
+      membershipsTotal: baseMemberships.length,
+    });
+
+    const linkedProfileResponse = await requestJsonOrNull(
+      `/Destiny2/${membership.membershipType}/Profile/${membership.membershipId}/LinkedProfiles/?getAllMemberships=true`,
+      token
+    );
+
+    for (const linkedMembership of collectLinkedMemberships(linkedProfileResponse)) {
+      addMembershipIfUnique(memberships, seenMemberships, linkedMembership);
+    }
+  }
+
+  return memberships;
+}
+
 async function fetchCharacterActivityHistory(token, membershipType, membershipId, characterId, onPageFetched = () => {}) {
   const windows = [];
   let pendingPages = [0, 1, 2];
@@ -417,6 +447,42 @@ function extractCharacterId(character) {
   }
 
   return '';
+}
+
+function collectLinkedMemberships(response) {
+  const profiles = Array.isArray(response?.profiles) ? response.profiles : Array.isArray(response) ? response : [];
+  const memberships = [];
+
+  for (const profile of profiles) {
+    memberships.push({
+      membershipId: profile?.membershipId ?? '',
+      membershipType: profile?.membershipType,
+      iconPath: profile?.iconPath ?? '',
+    });
+  }
+
+  return memberships.filter((membership) => membership.membershipId && membership.membershipType != null);
+}
+
+function addMembershipIfUnique(target, seenMemberships, membership) {
+  const membershipId = membership?.membershipId ? String(membership.membershipId) : '';
+  const membershipType = membership?.membershipType;
+
+  if (!membershipId || membershipType == null) {
+    return;
+  }
+
+  const key = `${membershipType}:${membershipId}`;
+  if (seenMemberships.has(key)) {
+    return;
+  }
+
+  seenMemberships.add(key);
+  target.push({
+    ...membership,
+    membershipId,
+    membershipType: Number(membershipType),
+  });
 }
 
 export function getMembershipTypeLabel(membershipType) {
