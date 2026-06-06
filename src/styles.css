@@ -2021,3 +2021,137 @@ body.has-results {
     font-size: 0.74rem;
   }
 }
+
+@media (min-width: 1850px) and (min-height: 880px) {
+  /* Scale up logged-out page shell and layout spacing */
+  .page-shell {
+    width: min(1920px, calc(100vw - 80px));
+    padding: 36px 0 30px;
+  }
+
+  .hero-layout {
+    grid-template-columns: minmax(0, 1.34fr) minmax(420px, 480px);
+    gap: 48px;
+  }
+
+  /* Scale up logged-in (.has-results) layouts and components */
+  .has-results .page-shell {
+    width: min(1980px, calc(100vw - 80px));
+    padding: 36px 0 30px;
+  }
+
+  .has-results .hero-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(440px, 500px);
+    gap: 20px 32px;
+  }
+
+  .has-results .title-top {
+    font-size: clamp(4rem, 4.8vw, 5.8rem);
+  }
+
+  .has-results .title-bottom {
+    font-size: clamp(1.5rem, 1.75vw, 2.1rem);
+  }
+
+  .has-results .hero-copy {
+    font-size: 0.92rem;
+    line-height: 1.48;
+  }
+
+  .has-results .criteria-table-panel {
+    padding: 6px;
+  }
+
+  .has-results .criteria-table-header,
+  .has-results .criteria-row {
+    grid-template-columns: minmax(160px, 1.12fr) minmax(210px, 1.35fr) minmax(100px, 0.58fr) minmax(76px, 0.38fr);
+    gap: 10px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .has-results .criteria-row {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .has-results .criteria-era {
+    font-size: 1.02rem;
+  }
+
+  .has-results .criteria-dates,
+  .has-results .criteria-rule-copy,
+  .has-results .criteria-status {
+    font-size: 0.94rem;
+  }
+
+  .has-results .activity-stats-panel {
+    padding: 14px 22px 12px;
+  }
+
+  .has-results .activity-stats-header {
+    margin-bottom: 10px;
+    font-size: 0.88rem;
+  }
+
+  .has-results .stats-card {
+    padding: 10px 14px;
+    gap: 4px;
+  }
+
+  .has-results .stats-card-value {
+    font-size: 1.25rem;
+  }
+
+  .has-results .stats-card-label,
+  .has-results .stats-card-detail {
+    font-size: 0.82rem;
+  }
+
+  .has-results .timeline-row {
+    grid-template-columns: 160px minmax(0, 1fr) 200px;
+    gap: 12px;
+    padding: 6px 0;
+  }
+
+  .has-results .timeline-day {
+    height: 15px;
+  }
+
+  .has-results .timeline-era {
+    font-size: 0.96rem;
+  }
+
+  .has-results .timeline-count {
+    font-size: 1.02rem;
+  }
+
+  .has-results .timeline-dates {
+    font-size: 0.78rem;
+  }
+
+  .has-results .activity-stats-footnote {
+    margin-top: 6px;
+    font-size: 0.82rem;
+  }
+
+  .has-results .status-panel {
+    padding: 20px 24px;
+  }
+
+  .has-results .status-row strong,
+  .has-results .summary-name {
+    font-size: 1.2rem;
+  }
+
+  .has-results .status-detail,
+  .has-results .summary-meta {
+    font-size: 0.92rem;
+  }
+
+  .has-results .sharing-psa {
+    margin-top: 12px;
+    padding: 10px 12px;
+    font-size: 0.84rem;
+  }
+}
